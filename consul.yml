@@ -1,0 +1,30 @@
+---
+- hosts: all
+  become: yes
+  
+  tasks:
+  - name: create consul data directory
+    file: path=/etc/consul.d state=directory
+
+  # - name: copy consul binary
+  #   unarchive:
+  #     src: files/{{consul_archive}}
+  #     dest: /usr/local/bin
+  
+  - name: configure consul
+    template: src=consul.j2 dest=/etc/sysconfig/consul backup=yes
+    notify:
+    - restart consul
+
+  - name: configure consul service
+    template: src=consul.service.j2 dest=/usr/lib/systemd/system/consul.service backup=yes
+    notify:
+    - reload systemd daemon
+    - restart consul
+  
+  handlers:
+  - name: reload systemd daemon
+    command: /usr/bin/systemctl daemon-reload
+
+  - name: restart consul
+    service: name=consul state=restarted

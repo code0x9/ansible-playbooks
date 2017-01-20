@@ -1,0 +1,49 @@
+---
+- hosts: all
+  become: yes
+  
+  tasks:
+  - name: ensure system default docker does not exist
+    yum: name=docker state=absent
+
+  - name: copy docker packages
+    copy:
+      src: files/{{ item }}
+      dest: /tmp/{{ item }}
+    with_items:
+      - "{{ docker_selinux_rpm }}"
+      - "{{ docker_debuginfo_rpm }}"
+      - "{{ docker_rpm }}"
+  
+  - name: install docker
+    yum: name=/tmp/{{ item }}
+    with_items:
+      - "{{ docker_selinux_rpm }}"
+      - "{{ docker_debuginfo_rpm }}"
+      - "{{ docker_rpm }}"
+    notify:
+      - restart docker
+
+  - name: ensure docker group exist
+    group: name=docker
+
+  - name: ensure default user to join docker group
+    user: name=deploy groups=docker
+
+  - name: configure docker
+    template: src=docker.j2 dest=/etc/sysconfig/docker backup=yes
+    notify:
+      - restart docker
+
+  - name: configure docker service
+    template: src=docker.service.j2 dest=/usr/lib/systemd/system/docker.service backup=yes
+    notify:
+      - reload systemd daemon
+      - restart docker
+
+  handlers:
+  - name: reload systemd daemon
+    command: /usr/bin/systemctl daemon-reload
+
+  - name: restart docker
+    service: name=docker state=restarted

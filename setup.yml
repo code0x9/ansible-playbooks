@@ -1,0 +1,41 @@
+---
+- hosts: all
+  become: yes
+  tasks:
+  - name: ensure yum repository backup directory exist
+    file: path=/etc/yum.repos.d/orig state=directory
+
+  - name: check if vanilla repository file exists
+    stat: path=/etc/yum.repos.d/CentOS-Base.repo
+    register: vanilla_centos_repo_file
+
+  - name: move vanilla repository to backup directory if exist
+    shell: mv /etc/yum.repos.d/CentOS-* /etc/yum.repos.d/orig/
+    when: vanilla_centos_repo_file.stat.exists
+
+  - name: update packages
+    yum: name=* state=latest
+
+  - name: check if vanilla repository file exists
+    stat: path=/etc/yum.repos.d/CentOS-Base.repo
+    register: vanilla_centos_repo_file
+
+  - name: move vanilla repository to backup directory if exist
+    shell: mv /etc/yum.repos.d/CentOS-* /etc/yum.repos.d/orig/
+    when: vanilla_centos_repo_file.stat.exists
+
+  - name: install packages
+    yum: name={{ item }}
+    with_items:
+        - bridge-utils
+        - conntrack-tools
+        - lsof
+        - python-httplib2
+        - unzip
+        - vim
+
+  - name: change login shell
+    become: no
+    lineinfile:
+        dest: /home/deploy/.bashrc
+        line: 'export PS1="\[\e[32m\]\u@\h:\w\\$ \[\e[0m\]"'

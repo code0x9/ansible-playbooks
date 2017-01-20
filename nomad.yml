@@ -1,0 +1,30 @@
+---
+- hosts: all
+  become: yes
+  
+  tasks:
+  - name: create nomad data directory
+    file: path=/etc/nomad.d state=directory
+
+  # - name: copy nomad binary
+  #   unarchive:
+  #     src: files/{{nomad_archive}}
+  #     dest: /usr/local/bin
+
+  - name: configure nomad
+    template: src=nomad.hcl.j2 dest=/etc/nomad.d/nomad.hcl backup=yes
+    notify:
+    - restart nomad
+
+  - name: configure nomad service
+    template: src=nomad.service.j2 dest=/usr/lib/systemd/system/nomad.service backup=yes
+    notify:
+    - reload systemd daemon
+    - restart nomad
+
+  handlers:
+  - name: reload systemd daemon
+    command: /usr/bin/systemctl daemon-reload
+
+  - name: restart nomad
+    service: name=nomad state=restarted

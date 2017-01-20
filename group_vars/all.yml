@@ -1,0 +1,8 @@
+## archives
+consul_archive: consul_0.7.2_linux_amd64.zip
+nomad_archive: nomad_0.5.2_linux_amd64.zip
+
+## packages
+docker_rpm: docker-engine-1.12.6-1.el7.centos.x86_64.rpm
+docker_selinux_rpm: docker-engine-selinux-1.12.6-1.el7.centos.noarch.rpm
+docker_debuginfo_rpm: docker-engine-debuginfo-1.12.6-1.el7.centos.x86_64.rpm

@@ -1,0 +1,9 @@
+DOCKER_NOFILE=1000000
+DOCKER_OPTIONS="--exec-opt=native.cgroupdriver=cgroupfs \
+    --registry-mirror=https://docker-reg-mirror.d.9rum.cc \
+    --log-driver=json-file \
+    --log-opt=max-size=50m \
+    --log-opt=max-file=3 \
+    --host=unix:///var/run/docker.sock"
+DOCKER_STORAGE_OPTIONS="--storage-driver=overlay"
+DOCKER_NETWORK_OPTIONS="--bip=10.252.0.1/16"
